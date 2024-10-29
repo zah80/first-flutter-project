@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'location_screen.dart'; // Import the LocationScreen
 
 class SelectLocationScreen extends StatelessWidget {
   @override
@@ -10,7 +11,7 @@ class SelectLocationScreen extends StatelessWidget {
         title: Text(
           'Select Location',
           style: TextStyle(
-            color: Colors.grey, // Matches the color of the text
+            color: Colors.grey,
             fontSize: 18,
           ),
         ),
@@ -22,8 +23,8 @@ class SelectLocationScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Image.asset(
-              'assets/location.png', // Replace with your actual image asset
-              height: 150, // Adjust based on your design
+              'assets/location.JPG',
+              height: 150,
             ),
             SizedBox(height: 20),
             Text(
@@ -42,14 +43,17 @@ class SelectLocationScreen extends StatelessWidget {
                 color: Colors.grey,
               ),
             ),
-            SizedBox(height: 40),
+            SizedBox(height: 150),
             ElevatedButton(
               onPressed: () {
-                // Implement your logic to choose the city or navigate to the next screen
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => LocationScreen()),
+                );
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green, // Button color
-                padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                backgroundColor: Colors.green,
+                padding: EdgeInsets.symmetric(horizontal: 160, vertical: 20),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8.0),
                 ),

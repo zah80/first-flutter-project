@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart'; // Add this import
-import 'sign_in_screen.dart'; // Assuming you have a sign-in screen
-import 'select_location_screen.dart'; // Import SelectLocationScreen
+import 'package:shared_preferences/shared_preferences.dart';
+import 'sign_in_screen.dart';
 
 class CreateAccountScreen extends StatelessWidget {
   final TextEditingController fullNameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController repeatPasswordController = TextEditingController();
+
+  // Check if email already exists
+  Future<bool> _emailExists(String email) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString('email') == email;
+  }
 
   // Save user data to local storage
   Future<void> _saveUserData(String name, String email, String password) async {
@@ -28,10 +33,10 @@ class CreateAccountScreen extends StatelessWidget {
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop(); // Close the dialog
+                Navigator.of(context).pop();
                 Navigator.pushReplacement(
                   context,
-                  MaterialPageRoute(builder: (context) => SignInScreen()), // Navigate to login screen
+                  MaterialPageRoute(builder: (context) => SignInScreen()),
                 );
               },
               child: Text('OK'),
@@ -40,6 +45,37 @@ class CreateAccountScreen extends StatelessWidget {
         );
       },
     );
+  }
+
+  void _signUp(BuildContext context) async {
+    String name = fullNameController.text;
+    String email = emailController.text;
+    String password = passwordController.text;
+    String repeatPassword = repeatPasswordController.text;
+
+    if (name.isEmpty || email.isEmpty || password.isEmpty || repeatPassword.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Please fill in all fields")),
+      );
+      return;
+    }
+
+    if (await _emailExists(email)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Email already exists")),
+      );
+      return;
+    }
+
+    if (password != repeatPassword) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Passwords do not match")),
+      );
+      return;
+    }
+
+    await _saveUserData(name, email, password);
+    _showSuccessDialog(context);
   }
 
   @override
@@ -66,7 +102,7 @@ class CreateAccountScreen extends StatelessWidget {
             ),
             SizedBox(height: 40),
             TextField(
-              controller: fullNameController, // Add controller
+              controller: fullNameController,
               decoration: InputDecoration(
                 labelText: "Full name",
                 hintText: "Enter your name",
@@ -75,7 +111,7 @@ class CreateAccountScreen extends StatelessWidget {
             ),
             SizedBox(height: 20),
             TextField(
-              controller: emailController, // Add controller
+              controller: emailController,
               decoration: InputDecoration(
                 labelText: "Email address",
                 hintText: "name@example.com",
@@ -84,7 +120,7 @@ class CreateAccountScreen extends StatelessWidget {
             ),
             SizedBox(height: 20),
             TextField(
-              controller: passwordController, // Add controller
+              controller: passwordController,
               obscureText: true,
               decoration: InputDecoration(
                 labelText: "Create password",
@@ -94,7 +130,7 @@ class CreateAccountScreen extends StatelessWidget {
             ),
             SizedBox(height: 20),
             TextField(
-              controller: repeatPasswordController, // Add controller
+              controller: repeatPasswordController,
               obscureText: true,
               decoration: InputDecoration(
                 labelText: "Repeat password",
@@ -104,23 +140,7 @@ class CreateAccountScreen extends StatelessWidget {
             ),
             SizedBox(height: 30),
             ElevatedButton(
-              onPressed: () async {
-                if (passwordController.text == repeatPasswordController.text) {
-                  // Save user data in local storage
-                  await _saveUserData(
-                    fullNameController.text,
-                    emailController.text,
-                    passwordController.text,
-                  );
-                  // Show success dialog and move to login screen
-                  _showSuccessDialog(context);
-                } else {
-                  // Show error message if passwords do not match
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text("Passwords do not match")),
-                  );
-                }
-              },
+              onPressed: () => _signUp(context),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.green,
                 padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'select_location_screen.dart';
 
 class SignInScreen extends StatefulWidget {
   @override
@@ -6,8 +8,35 @@ class SignInScreen extends StatefulWidget {
 }
 
 class _SignInScreenState extends State<SignInScreen> {
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
   bool _rememberMe = false;
-  bool _passwordVisible = false; // Declare the _passwordVisible variable
+  bool _passwordVisible = false;
+
+  Future<bool> _checkCredentials(String email, String password) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? savedEmail = prefs.getString('email');
+    String? savedPassword = prefs.getString('password');
+
+    return savedEmail == email && savedPassword == password;
+  }
+
+  void _signIn(BuildContext context) async {
+    String email = emailController.text;
+    String password = passwordController.text;
+
+    bool credentialsValid = await _checkCredentials(email, password);
+    if (credentialsValid) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => SelectLocationScreen()),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Email or password is incorrect")),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -33,6 +62,7 @@ class _SignInScreenState extends State<SignInScreen> {
             ),
             SizedBox(height: 40),
             TextField(
+              controller: emailController,
               decoration: InputDecoration(
                 labelText: "Email address",
                 hintText: "name@example.com",
@@ -41,20 +71,19 @@ class _SignInScreenState extends State<SignInScreen> {
             ),
             SizedBox(height: 20),
             TextField(
-                    obscureText: !_passwordVisible, // Toggles between showing and hiding the password
+              controller: passwordController,
+              obscureText: !_passwordVisible,
               decoration: InputDecoration(
                 labelText: "Password",
                 hintText: "Enter your password",
                 border: OutlineInputBorder(),
                 suffixIcon: IconButton(
                   icon: Icon(
-                    _passwordVisible
-                        ? Icons.visibility
-                        : Icons.visibility_off, // Changes the icon based on visibility
+                    _passwordVisible ? Icons.visibility : Icons.visibility_off,
                   ),
                   onPressed: () {
                     setState(() {
-                      _passwordVisible = !_passwordVisible; // Toggles the visibility
+                      _passwordVisible = !_passwordVisible;
                     });
                   },
                 ),
@@ -76,9 +105,7 @@ class _SignInScreenState extends State<SignInScreen> {
             ),
             SizedBox(height: 30),
             ElevatedButton(
-              onPressed: () {
-                // Handle sign in action here
-              },
+              onPressed: () => _signIn(context),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.green,
                 padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
